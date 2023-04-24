@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Isidre Rosell">
+    <meta name="description" content="Fake Shopping API MP06 UF3">
+    <title>Fake Shopping API</title>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.3/font/bootstrap-icons.min.css"
+        integrity="sha512-YFENbnqHbCRmJt5d+9lHimyEMt8LKSNTMLSaHjvsclnZGICeY/0KYEeiHwD1Ux4Tcao0h60tdcMv+0GljvWyHg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css"
+        integrity="sha512-SbiR/eusphKoMVVXysTKG/7VseWii+Y3FdHrt0EpKgpToZeemhqHeZeLWLhJutz/2ut2Vw1uQEj2MbRF+TVBUA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+    <!--
+            Objectives: 
+                x Navegar per les categories de la botiga virtual
+                x Visualitzar els productes d'una categoria
+                x Els productes es podran demanar ordenats o limitar el numero de productes a 5
+                x Visualitzar la fitxa d'un producte
+                x Inserir un producte al catàleg (Aquesta operació no es realitza ja que és una Fake API)
+                x Obtenir tots els carritos de compra
+                x Obtenir els productes d'un carrito de compra
+                x Eliminar un carrito de compra (Aquesta operació no es realitza ja que és una Fake API)
+                x Actualitzar un producte (Aquesta operació no es realitza ja que és una Fake API)
+        -->
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div> </div>
+        <a class="navbar-brand" href="#">Mi Tienda</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-around" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item mx-2">
+                    <a class="nav-link nav-link-category active" aria-current="page" href="#"
+                        data-category="all">All</a>
+                </li>
+                <li class="nav-item mx-2">
+                    <a class="nav-link nav-link-category" href="#" data-category="electronics">Electronics</a>
+                </li>
+                <li class="nav-item mx-2">
+                    <a class="nav-link nav-link-category" href="#" data-category="jewelery">Jewelery</a>
+                </li>
+                <li class="nav-item mx-2">
+                    <a class="nav-link nav-link-category" href="#" data-category="men's clothing">Men's Clothing</a>
+                </li>
+                <li class="nav-item mx-2">
+                    <a class="nav-link nav-link-category" href="#" data-category="women's clothing">Women's Clothing</a>
+                </li>
+            </ul>
+        </div>
+        <div class="navbar-nav ml-auto"> <!-- Agregamos esta parte para alinear a la derecha -->
+            <button class="btn btn-outline-primary" data-toggle="modal" data-target="#productoModal"
+                id="btnAddProduct"><i class="bi bi-plus-circle"></i></button>
+            <div> </div>
+            <button class="btn btn-outline-primary" data-toggle="modal" data-target="#carritoModal"
+                id="showCartShopping"><i class="bi bi-cart-check"></i></button>
+            <div> </div>
+        </div>
+    </nav>
+
+    <div id="alertContainer"></div>
+
+    <!-- Contenedor de Productos -->
+    <div class="container mt-5">
+        <h1 class="text-center" id="productstitle">Todos los productos</h1>
+        <hr>
+        <div class="row mt-5 mb-5">
+            <div class="col-md-5">
+                <div class="form-group">
+                    <label for="limitInput">Límite de productos</label>
+                    <input type="number" class="form-control" id="limitInput" min="1" max="10" value="5">
+                    <button class="btn btn-primary mt-1" id="btnLimitar">Limitar</button></br>
+                </div>
+            </div>
+            <div class="col-md-2 text-center mt-3">
+                <button class="btn btn-outline-secondary mt-1" id="btnCombine">Limitar y Ordenar</button>
+            </div>
+            <div class="col-md-5 text-end">
+                <div class="form-group">
+                    <label for="ordenarSelect">Ordenar por</label>
+                    <select class="form-control" id="ordenarSelect">
+                        <option value="asc">Acendiente</option>
+                        <option value="desc">Descendiente</option>
+                    </select>
+                    <button class="btn btn-primary mt-1" id="btnOrdenar">Ordenar</button>
+                </div>
+            </div>
+        </div>
+        <div class="row" id="productosContainer">
+            <!-- Aquí se muestran los productos -->
+        </div>
+    </div>
+
+
+
+    <!-- Modal de Crear/Actualizar Producto -->
+    <div class="modal fade" id="productoModal" tabindex="-1" role="dialog" aria-labelledby="productoModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="productoModalLabel">Nuevo Producto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="productoForm">
+                        <input type="hidden" id="productoId">
+                        <div class="form-group mt-3">
+                            <label for="productoNombre">Nombre</label>
+                            <input type="text" class="form-control" id="productoNombre" required>
+                        </div>
+                        <div class="form-group mt-3">
+                            <label for="productoPrecio">Precio</label>
+                            <input type="number" class="form-control" id="productoPrecio" required>
+                        </div>
+                        <div class="form-group mt-3">
+                            <label for="productoDescripcion">Descripción</label>
+                            <textarea class="form-control" id="productoDescripcion" rows="3" required></textarea>
+                        </div>
+                        <div class="form-group mt-3">
+                            <!-- -50% in width and height -->
+                            <label for="productoImagen">Imagen</label><br>
+                            <img src="" alt="" id="productoImagen" class="img-fluid"
+                                style="max-width: 50%; max-height: 50%;">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" id="saveProduct">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Add Product -->
+    <div class="modal fade" id="addProductModal" tabindex="-1" role="dialog" aria-labelledby="addProductLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addProductLabel">Añadir Producto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addProductForm">
+                        <div class="form-group mt-3">
+                            <label for="addProductNombre">Nombre</label>
+                            <input type="text" class="form-control" id="addProductNombre" required>
+                        </div>
+                        <div class="form-group mt-3">
+                            <label for="addProductPrecio">Precio</label>
+                            <input type="number" class="form-control" id="addProductPrecio" required>
+                        </div>
+                        <div class="form-group mt-3">
+                            <label for="addProductDescripcion">Descripción</label>
+                            <textarea class="form-control" id="addProductDescripcion" rows="3" required></textarea>
+                        </div>
+                        <div class="form-group mt-3">
+                            <label for="addProductCategory">Categoría</label>
+                            <select class="form-control" id="addProductCategory">
+                                <option value="electronics">Electronics</option>
+                                <option value="jewelery">Joyeria</option>
+                                <option value="men's clothing">Ropa de Hombres</option>
+                                <option value="women's clothing">Ropa de Mujer</option>
+                            </select>
+                        </div>
+                        <div class="form-group mt-3">
+                            <!-- -50% in width and height -->
+                            <label for="addProductImagen">Imagen</label><br>
+                            <img src="" alt="" id="addProductImagen" class="img-fluid"
+                                style="max-width: 50%; max-height: 50%;">
+                            <input type="file" class="form-control" id="addProductImagen" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" id="saveAddProduct">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Shopping Cart -->
+    <div class="modal fade" id="carritoModal" tabindex="-1" role="dialog" aria-labelledby="carritoModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header" id="carritoModalHeader">
+                    <h5 class="modal-title" id="carritoModalLabel">Shopping Cart</h5>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body lg">
+                    <!--- Make a buttons grupos 1 random cart, my cart and next cart -->
+                    <div class="btn-group d-flex justify-content-center" role="group" aria-label="Basic example">
+                        <button type="button" class="btn btn-secondary" id="randomCart">Random Cart</button>
+                        <button type="button" class="btn btn-secondary" id="myCart">My Cart</button>
+                        <button type="button" class="btn btn-secondary" id="nextCart">Next Cart</button>
+                    </div>
+
+                    <!-- Fecha de creaccion del carito -->
+                    <div class="d-flex justify-content-center mt-3">
+                        <p id="cartDate"></p>
+                    </div>
+
+                    <table class="table table-striped table-hover" >
+                        <thead>
+                            <tr>
+                                <th scope="col">Product Name</th>
+                                <th scope="col">Price</th>
+                                <th scope="col">Quantity</th>
+                                <th scope="col">Total</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cartTable">
+                            <tr>
+                                <td>Product 1</td>
+                                <td>$100</td>
+                                <td>1</td>
+                                <td>$100</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Script de Bootstrap y jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.min.js"></script>
+
+    <script src="assets/js/script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.bundle.min.js"
+        integrity="sha512-i9cEfJwUwViEPFKdC1enz4ZRGBj8YQo6QByFTF92YXHi7waCqyexvRD75S5NVTsSiTv7rKWqG9Y5eFxmRsOn0A=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</body>
+
+</html>

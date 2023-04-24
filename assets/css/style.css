@@ -1,0 +1,11 @@
+/* Agrega estilos para resaltar la categoría seleccionada */
+.navbar-nav .nav-link.active {
+    font-weight: bold;
+    color: #fff;
+    background-color: #007bff;
+    border-radius: 5px;
+}
+
+.hidden {
+    display: none;
+}
