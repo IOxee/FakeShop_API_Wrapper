@@ -20,6 +20,8 @@ This is an educational project to learn how to use Javascript APIs, graphical in
 - [x] Update a product (This operation is not performed because it is a Fake API)
 - [ ] More...
 
+# Fake Store API</br>
+### Fake store rest API for your e-commerce or shopping website prototype <a href="https://fakestoreapi.com">FakeShop API</a>
 
 # CREDITS
 [IOxee](https://github.com/IOxee)
