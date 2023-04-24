@@ -8,7 +8,7 @@ $(document).ready(function () {
 
 let categories = {
     "all": "Todos los productos",
-    "electronics": "Electrónicos",
+    "electronics": "Electronica",
     "jewelery": "Joyería",
     "men's clothing": "Ropa para hombres",
     "women's clothing": "Ropa para mujeres"
