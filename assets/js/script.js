@@ -21,52 +21,48 @@ let nextCart = 0;
 let deleteProductsCars = [];
 
 function cargarProductos() {
-    // Hacer una petición AJAX para obtener los productos de la API de FakeStore
-    $.ajax({
-        url: 'https://fakestoreapi.com/products', // URL de la API de FakeStore
-        type: 'GET',
-        dataType: 'json',
-        success: function (data) {
+    fetch('https://fakestoreapi.com/products')
+        .then(response => response.json())
+        .then(data => {
             // Limpiar el contenedor de productos
             $('#productosContainer').empty();
             localStorage.setItem('products', JSON.stringify(data));
             $('#productstitle').text(categories['all']);
 
             // Recorrer los productos y agregarlos al contenedor
-            $.each(data, function (index, producto) {
+            data.forEach(producto => {
                 $('#productosContainer').append(`
                     <div class="col-md-4 mb-4">
-                        <div class="card">
-                            <img src="${producto.image}" alt="${producto.title}" class="card-img-top">
-                            <div class="card-body">
-                                <h5 class="card-title">${producto.title}</h5>
-                                <p class="card-text">${producto.description}</p>
-                                <p class="card-text">Precio: $${producto.price}</p>
-                                <div class="text-end">
-                                    <button class="btn btn-primary btn-sm editar-producto" data-id="${producto.id}">Editar</button>
-                                    <button class="btn btn-danger btn-sm eliminar-producto" data-id="${producto.id}">Eliminar</button>
-                                </div>
-                            </div>
+                    <div class="card">
+                        <img src="${producto.image}" alt="${producto.title}" class="card-img-top">
+                        <div class="card-body">
+                        <h5 class="card-title">${producto.title}</h5>
+                        <p class="card-text">${producto.description}</p>
+                        <p class="card-text">Precio: $${producto.price}</p>
+                        <div class="text-end">
+                            <button class="btn btn-primary btn-sm editar-producto" data-id="${producto.id}">Editar</button>
+                            <button class="btn btn-danger btn-sm eliminar-producto" data-id="${producto.id}">Eliminar</button>
                         </div>
+                        </div>
+                    </div>
                     </div>
                 `);
             });
-
+        
             // Agregar listeners de eventos para los botones de editar y eliminar producto
             $('.editar-producto').click(function () {
                 // Obtener el ID del producto a editar
                 var productoId = $(this).data('id');
 
                 // Obtener los datos del producto a editar
-                $.ajax({
-                    url: 'https://fakestoreapi.com/products/' + productoId,
-                    type: 'GET',
-                    success: function (producto) {
+                fetch(`https://fakestoreapi.com/products/${productoId}`)
+                    .then(response => response.json())
+                    .then(producto => {
                         // Rellenar los campos del modal con los datos del producto
-                        $('#productoNombre').val(producto.title);
-                        $('#productoPrecio').val(producto.price);
-                        $('#productoDescripcion').val(producto.description);
-                        $('#productoImagen').attr('src', producto.image);
+                        $('#productoNombre').value = producto.title;
+                        $('#productoPrecio').value = producto.price;
+                        $('#productoDescripcion').value = producto.description;
+                        $('#productoImagen').setAttribute('src', producto.image);
 
                         // Abrir el modal de edición
                         $('#productoModal').modal('show');
@@ -80,33 +76,33 @@ function cargarProductos() {
                             var nuevaImagen = $('#productoImagen').attr('src');
 
                             // Realizar la petición PUT o PATCH para actualizar el producto
-                            $.ajax({
-                                url: 'https://fakestoreapi.com/products/' + productoId,
-                                type: 'PATCH', // Cambiar a 'PUT' si se desea utilizar el método PUT
-                                contentType: 'application/json',
-                                data: JSON.stringify({
+                            fetch(`https://fakestoreapi.com/products/${productoId}`, {
+                                method: 'PATCH', // Cambiar a 'PUT' si se desea utilizar el método PUT
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
                                     title: nuevoTitulo,
                                     price: nuevoPrecio,
                                     description: nuevaDescripcion,
                                     image: nuevaImagen
-                                }),
-                                success: function (json) {
-                                    console.log(json);
-                                },
-                                error: function (error) {
-                                    console.log(error);
-                                }
+                                })
+                            })
+                            .then(response => {
+                                console.log(response);
+                            })
+                            .catch(error => {
+                                console.log(error);
                             });
 
                             // Cerrar el modal de edición
                             $('#productoModal').modal('hide');
                         });
-                    },
-                    error: function (error) {
-                        console.log(error);
+                    })
+                    .catch(error => {
                         // Aquí puedes manejar los errores en caso de que la petición falle
-                    }
-                });
+                        console.log(error);
+                    });
             });
 
 
@@ -127,8 +123,9 @@ function cargarProductos() {
                     }
                 }).catch(error => console.error("Error al eliminar el producto:", error));
             });
-        }
-    });
+        })
+        .catch(error => console.error("Error al obtener los productos:", error));
+    
 }
 
 // Función para manejar el clic en los enlaces de categoría
@@ -145,13 +142,12 @@ $('.nav-link-category').click(function (e) {
         cargarProductos();
         return;
     }
-    console.log('https://fakestoreapi.com/products/category/' + category);
+    console.log('https://fakestoreapi.com/products/category/' + encodeURI(category));
 
     // Realizar la búsqueda por categoría
-    $.ajax({
-        url: 'https://fakestoreapi.com/products/category/' + category,
-        method: 'GET',
-        success: function (data) {
+    fetch(`https://fakestoreapi.com/products/category/${encodeURI(category)}`)
+        .then(response => response.json())
+        .then(data => {
             // Actualizar la vista con los productos de la categoría seleccionada
             $('#productosContainer').empty(); // Vaciar el contenedor de productos antes de actualizar
 
@@ -160,7 +156,7 @@ $('.nav-link-category').click(function (e) {
             $('#productstitle').text(categories[category]);
 
             // Recorrer los productos y agregarlos a la vista
-            $.each(data, function (index, producto) {
+            data.forEach(producto => {
                 $('#productosContainer').append(`
                     <div class="col-md-4 mb-4">
                         <div class="card">
@@ -178,22 +174,24 @@ $('.nav-link-category').click(function (e) {
                     </div>
                 `);
             });
-        },
-        error: function (err) {
-            console.error(err);
-        }
-    });
+        })
+        .catch(error => console.error("Error al obtener los productos:", error))
 });
+
 
 // Función para limiar los productos por categoria y cantidad
 $("#btnLimitar").click(function () {
     let categoria = activeCategory;
     let limite = $("#limitInput").val();
     if (categoria == "all") {
-        $.ajax({
-            url: `https://fakestoreapi.com/products`,
-            method: "GET",
-            success: function (productos) {
+        fetch(`https://fakestoreapi.com/products`)
+            .then(response => {
+                if (!response.ok) {
+                throw new Error("Error en la petición");
+                }
+                return response.json();
+            })
+            .then(productos => {
                 console.log(productos + " " + limite);
 
                 let productosLimitados = productos.slice(0, limite);
@@ -201,63 +199,65 @@ $("#btnLimitar").click(function () {
                 $("#productstitle").text(`Productos limitados a ${limite}`);
 
                 productosLimitados.forEach(function (producto) {
-                    $("#productosContainer").append(`
-                        <div class="col-md-4 mb-4">
-                            <div class="card">
-                                <img src="${producto.image}" alt="${producto.title}" class="card-img-top">
-                                <div class="card-body">
-                                    <h5 class="card-title">${producto.title}</h5>
-                                    <p class="card-text">${producto.description}</p>
-                                    <p class="card-text">Precio: $${producto.price}</p>
-                                    <div class="text-end">
-                                        <button class="btn btn-primary btn-sm editar-producto" data-id="${producto.id}">Editar</button>
-                                        <button class="btn btn-danger btn-sm eliminar-producto" data-id="${producto.id}">Eliminar</button>
-                                    </div>
-                                </div>
-                            </div>
+                $("#productosContainer").append(`
+                    <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <img src="${producto.image}" alt="${producto.title}" class="card-img-top">
+                        <div class="card-body">
+                        <h5 class="card-title">${producto.title}</h5>
+                        <p class="card-text">${producto.description}</p>
+                        <p class="card-text">Precio: $${producto.price}</p>
+                        <div class="text-end">
+                            <button class="btn btn-primary btn-sm editar-producto" data-id="${producto.id}">Editar</button>
+                            <button class="btn btn-danger btn-sm eliminar-producto" data-id="${producto.id}">Eliminar</button>
                         </div>
-                    `);
+                        </div>
+                    </div>
+                    </div>
+                `);
                 });
-            },
-            error: function (xhr, textStatus, errorThrown) {
-                console.error("Error en la petición:", textStatus, errorThrown);
-            }
-        });
+            })
+            .catch(error => {
+                console.error("Error en la petición:", error);
+            });
         return
     }
-    $.ajax({
-        url: `https://fakestoreapi.com/products/category/${categoria}`,
-        method: "GET",
-        success: function (productos) {
+    fetch(`https://fakestoreapi.com/products/category/${encodeURI(categoria)}`)
+        .then(response => {
+            if (!response.ok) {
+            throw new Error("Error en la petición");
+            }
+            return response.json();
+        })
+        .then(productos => {
             console.log(productos + " " + limite);
-            
+
             let productosLimitados = productos.slice(0, limite);
             $("#productosContainer").empty();
             $("#productstitle").text(`${categoria} (${productosLimitados.length} productos)`);
-            
+
             productosLimitados.forEach(function (producto) {
-                $("#productosContainer").append(`
-                    <div class="col-md-4 mb-4">
-                        <div class="card">
-                            <img src="${producto.image}" alt="${producto.title}" class="card-img-top">
-                            <div class="card-body">
-                                <h5 class="card-title">${producto.title}</h5>
-                                <p class="card-text">${producto.description}</p>
-                                <p class="card-text">Precio: $${producto.price}</p>
-                                <div class="text-end">
-                                    <button class="btn btn-primary btn-sm editar-producto" data-id="${producto.id}">Editar</button>
-                                    <button class="btn btn-danger btn-sm eliminar-producto" data-id="${producto.id}">Eliminar</button>
-                                </div>
-                            </div>
-                        </div>
+            $("#productosContainer").append(`
+                <div class="col-md-4 mb-4">
+                <div class="card">
+                    <img src="${producto.image}" alt="${producto.title}" class="card-img-top">
+                    <div class="card-body">
+                    <h5 class="card-title">${producto.title}</h5>
+                    <p class="card-text">${producto.description}</p>
+                    <p class="card-text">Precio: $${producto.price}</p>
+                    <div class="text-end">
+                        <button class="btn btn-primary btn-sm editar-producto" data-id="${producto.id}">Editar</button>
+                        <button class="btn btn-danger btn-sm eliminar-producto" data-id="${producto.id}">Eliminar</button>
                     </div>
-                `);
+                    </div>
+                </div>
+                </div>
+            `);
             });
-        },
-        error: function (xhr, textStatus, errorThrown) {
-            console.error("Error en la petición:", textStatus, errorThrown);
-        }
-    });
+        })
+        .catch(error => {
+            console.error("Error en la petición:", error);
+        });
 });
 
 $("#btnOrdenar").click(function () {
